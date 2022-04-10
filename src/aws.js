@@ -1,7 +1,7 @@
 const AWS = require('aws-sdk');
 const core = require('@actions/core');
 const config = require('./config');
-const backOff = require('exponential-backoff');
+import { backOff } from "exponential-backoff";
 
 const backOffSettings = {
   delayFirstAttempt: false,
