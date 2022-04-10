@@ -102,13 +102,14 @@ async function waitForInstanceRunning(ec2InstanceId) {
 async function startEc2InstanceExponential(label, githubRegistrationToken) {
   await backOff(
     async () => {
-      await this.startEc2Instance(label, githubRegistrationToken);
+      const instanceId = await this.startEc2Instance(label, githubRegistrationToken);
+      return instanceId;
     },
     {
       ...backOffSettings,
       retry: () => {
         return true
-    },
+      },
     }
   )
 }
