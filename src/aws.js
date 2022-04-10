@@ -107,7 +107,8 @@ async function startEc2InstanceExponential(label, githubRegistrationToken) {
     },
     {
       ...backOffSettings,
-      retry: () => {
+      retry: (err) => {
+        core.info(err);
         return true
       },
     }
