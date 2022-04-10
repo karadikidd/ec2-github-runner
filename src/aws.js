@@ -1,7 +1,14 @@
 const AWS = require('aws-sdk');
 const core = require('@actions/core');
 const config = require('./config');
+const { backOff } = require('exponential-backoff');
 
+const backOffSettings = {
+  delayFirstAttempt: false,
+  startingDelay: 100,
+  timeMultiple: 2,
+  numOfAttempts: 5,
+};
 // User data scripts are run as the root user
 function buildUserDataScript(githubRegistrationToken, label) {
   if (config.input.runnerHomeDir) {
@@ -92,8 +99,23 @@ async function waitForInstanceRunning(ec2InstanceId) {
   }
 }
 
+async function startEc2InstanceExponential(label, githubRegistrationToken) {
+  await backOff(
+    async () => {
+      await this.startEc2Instance(label, githubRegistrationToken);
+    },
+    {
+      ...backOffSettings,
+      retry: () => {
+        return true
+    },
+    }
+  )
+}
+
 module.exports = {
   startEc2Instance,
   terminateEc2Instance,
   waitForInstanceRunning,
+  startEc2InstanceExponential,
 };
