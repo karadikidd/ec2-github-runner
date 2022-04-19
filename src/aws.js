@@ -100,19 +100,22 @@ async function waitForInstanceRunning(ec2InstanceId) {
 }
 
 async function startEc2InstanceExponential(label, githubRegistrationToken) {
-  await backOff(
+  const instanceId = await backOff(
     async () => {
       const instanceId = await startEc2Instance(label, githubRegistrationToken);
       return instanceId;
     },
     {
       ...backOffSettings,
-      retry: (err) => {
+      retry: (err, attemptNumber) => {
         core.info(err);
-        return true
+        console.log(attemptNumber);
+        console.log(JSON.stringify(err, null, 2));
       },
     }
-  )
+  );
+
+  return instanceId;
 }
 
 module.exports = {
