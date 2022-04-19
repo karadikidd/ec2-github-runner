@@ -109,8 +109,9 @@ async function startEc2InstanceExponential(label, githubRegistrationToken) {
       ...backOffSettings,
       retry: (err, attemptNumber) => {
         core.info(err);
-        console.log(attemptNumber);
-        console.log(JSON.stringify(err, null, 2));
+        core.info(`retry attmept: ${attemptNumber}`);
+        const retry = err.code === "RequestLimitExceeded" ? true : false
+        return retry
       },
     }
   );
