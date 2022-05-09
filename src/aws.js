@@ -5,7 +5,7 @@ const { backOff } = require('exponential-backoff');
 
 const backOffSettings = {
   delayFirstAttempt: false,
-  startingDelay: 100,
+  startingDelay: 2000,
   timeMultiple: 2,
   numOfAttempts: 5,
 };
