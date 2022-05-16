@@ -66,7 +66,8 @@ async function waitForRunnerRegistered(label) {
     const interval = setInterval(async () => {
       const runner = await getRunner(label);
     
-      await octokit.request('https://api.github.com/users/octocat');
+      const apiRateStatus = await octokit.request('https://api.github.com/users/octocat');
+      core.info(apiRateStatus);
       if (waitSeconds > timeoutMinutes * 60) {
         core.error('GitHub self-hosted runner registration error');
         clearInterval(interval);
