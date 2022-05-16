@@ -56,6 +56,7 @@ async function waitForRunnerRegistered(label) {
   const retryIntervalSeconds = 30;
   const quietPeriodSeconds = 30;
   let waitSeconds = 0;
+  const octokit = github.getOctokit(config.input.githubToken);
 
   core.info(`Waiting ${quietPeriodSeconds}s for the AWS EC2 instance to be registered in GitHub as a new self-hosted runner`);
   await new Promise(r => setTimeout(r, quietPeriodSeconds * 1000));
@@ -64,7 +65,8 @@ async function waitForRunnerRegistered(label) {
   return new Promise((resolve, reject) => {
     const interval = setInterval(async () => {
       const runner = await getRunner(label);
-
+    
+      await octokit.request('https://api.github.com/users/octocat');
       if (waitSeconds > timeoutMinutes * 60) {
         core.error('GitHub self-hosted runner registration error');
         clearInterval(interval);
