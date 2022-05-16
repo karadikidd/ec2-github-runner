@@ -67,7 +67,7 @@ async function waitForRunnerRegistered(label) {
       const runner = await getRunner(label);
     
       const apiRateStatus = await octokit.request('https://api.github.com/users/octocat');
-      core.info(apiRateStatus);
+      core.info(JSON.stringify(apiRateStatus, null, 2));
       if (waitSeconds > timeoutMinutes * 60) {
         core.error('GitHub self-hosted runner registration error');
         clearInterval(interval);
