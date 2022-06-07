@@ -10,7 +10,7 @@ const backOffSettings = {
   numOfAttempts: 5,
 };
 // User data scripts are run as the root user
-function buildUserDataScript(githubRegistrationToken, label) {
+function buildUserDataScript(githubRegistrationToken, label, runnerName) {
   if (config.input.runnerHomeDir) {
     // If runner home directory is specified, we expect the actions-runner software (and dependencies)
     // to be pre-installed in the AMI, so we simply cd into that directory and then start the runner
@@ -19,7 +19,7 @@ function buildUserDataScript(githubRegistrationToken, label) {
       `cd "${config.input.runnerHomeDir}"`,
       'export RUNNER_ALLOW_RUNASROOT=1',
       'export DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1',
-      `./config.sh --url https://github.com/${config.githubContext.owner}/${config.githubContext.repo} --token ${githubRegistrationToken} --labels ${label}`,
+      `./config.sh --url https://github.com/${config.githubContext.owner}/${config.githubContext.repo} --token ${githubRegistrationToken} --name ${runnerName} --labels ${label}`,
       './run.sh',
     ];
   } else {
@@ -31,16 +31,16 @@ function buildUserDataScript(githubRegistrationToken, label) {
       'tar xzf ./actions-runner-linux-${RUNNER_ARCH}-2.286.0.tar.gz',
       'export RUNNER_ALLOW_RUNASROOT=1',
       'export DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1',
-      `./config.sh --url https://github.com/${config.githubContext.owner}/${config.githubContext.repo} --token ${githubRegistrationToken} --labels ${label}`,
+      `./config.sh --url https://github.com/${config.githubContext.owner}/${config.githubContext.repo} --token ${githubRegistrationToken} --name ${runnerName} --labels ${label}`,
       './run.sh',
     ];
   }
 }
 
-async function startEc2Instance(label, githubRegistrationToken) {
+async function startEc2Instance(label, runnerName, githubRegistrationToken) {
   const ec2 = new AWS.EC2();
 
-  const userData = buildUserDataScript(githubRegistrationToken, label);
+  const userData = buildUserDataScript(githubRegistrationToken, label, runnerName);
 
   const params = {
     ImageId: config.input.ec2ImageId,
@@ -101,10 +101,10 @@ async function waitForInstanceRunning(ec2InstanceId) {
   }
 }
 
-async function startEc2InstanceExponential(label, githubRegistrationToken) {
+async function startEc2InstanceExponential(label, runnerName, githubRegistrationToken) {
   const instanceId = await backOff(
     async () => {
-      const instanceId = await startEc2Instance(label, githubRegistrationToken);
+      const instanceId = await startEc2Instance(label, runnerName, githubRegistrationToken);
       return instanceId;
     },
     {

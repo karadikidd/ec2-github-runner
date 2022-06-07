@@ -10,11 +10,16 @@ function setOutput(label, ec2InstanceId) {
 
 async function start() {
   const label = config.generateUniqueLabel();
+  const runnerName = config.generateUniqueName(15);
+  const runnerExists = gh.getRunner(label, runnerName);
+  if (runnerExists) {
+    gh.removeRunner(runnerName);
+  }
   const githubRegistrationToken = await gh.getRegistrationToken();
-  const ec2Instance = await aws.startEc2InstanceExponential(label, githubRegistrationToken);
-  setOutput(label, ec2Instance.InstanceId);
+  const ec2Instance = await aws.startEc2InstanceExponential(label, runnerName, githubRegistrationToken);
+  setOutput(label, runnerName, ec2Instance.InstanceId);
   await aws.waitForInstanceRunning(ec2Instance.InstanceId);
-  await gh.waitForRunnerRegistered(label, ec2Instance);
+  await gh.waitForRunnerRegistered(label, runnerName);
 }
 
 async function stop() {

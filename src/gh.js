@@ -9,8 +9,7 @@ async function getRunner(label, runnerName) {
   const octokit = github.getOctokit(config.input.githubToken);
 
   try {
-    
-    core.info(`looking for label: ${label}`)
+    core.info(`looking for label: ${label} or name: ${runnerName}`)
     const runners = await octokit.paginate('GET /repos/{owner}/{repo}/actions/runners', config.githubContext);
     core.debug(`Total unfiltered runners: ${runners.length}`)
     core.debug(`Found the following unfiltered runners: ${JSON.stringify(runners, null, 2)}`)
@@ -21,9 +20,9 @@ async function getRunner(label, runnerName) {
     core.debug(`Found the following filtered runners: ${JSON.stringify(foundRunners, null, 2)}`)
     core.debug(`Found the following filtered runners by name: ${JSON.stringify(foundRunnersByDnsName, null, 2)}`)
     if (foundRunners.length) {
-    core.info(`Found runner by label: ${label}`)
-    return foundRunners[0]
-  } else if (foundRunnersByDnsName.length) {
+      core.info(`Found runner by label: ${label}`)
+      return foundRunners[0]
+    } else if (foundRunnersByDnsName.length) {
       core.info(`Found runner by name: ${runnerName}`)
       return foundRunnersByDnsName[0]
     } else {
@@ -49,13 +48,14 @@ async function getRegistrationToken() {
   }
 }
 
-async function removeRunner() {
-  const runner = await getRunner(config.input.label);
+async function removeRunner(runnerName = null) {
+  const runnerNameToUse = runnerName ? runnerName : config.input.runnerName
+  const runner = await getRunner(config.input.label, runnerNameToUse);
   const octokit = github.getOctokit(config.input.githubToken);
 
   // skip the runner removal process if the runner is not found
-  if (!runner) {
-    core.info(`GitHub self-hosted runner with label ${config.input.label} is not found, so the removal is skipped`);
+  if (!runner || runner.status !== 'offline') {
+    core.info(`GitHub self-hosted runner with label ${config.input.label} was not found, or the status is not offline, so removal is skipped`);
     return;
   }
 
@@ -69,11 +69,10 @@ async function removeRunner() {
   }
 }
 
-async function waitForRunnerRegistered(label, ec2Instance) {
+async function waitForRunnerRegistered(label, runnerName) {
   const timeoutMinutes = 5;
   const retryIntervalSeconds = 30;
   const quietPeriodSeconds = 30;
-  const runnerName = ec2Instance.PrivateDnsName.split('.')[0];
   let waitSeconds = 0;
   // const octokit = github.getOctokit(config.input.githubToken);
 
@@ -106,6 +105,7 @@ async function waitForRunnerRegistered(label, ec2Instance) {
 }
 
 module.exports = {
+  getRunner,
   getRegistrationToken,
   removeRunner,
   waitForRunnerRegistered,
