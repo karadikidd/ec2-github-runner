@@ -9,8 +9,14 @@ async function getRunner(label) {
   const octokit = github.getOctokit(config.input.githubToken);
 
   try {
+    
+    core.info(`looking for label: ${label}`)
     const runners = await octokit.paginate('GET /repos/{owner}/{repo}/actions/runners', config.githubContext);
+    core.info(`Total unfiltered runners: ${runners.length}`)
+    core.info(`Found the following unfiltered runners: ${JSON.stringify(runners, null, 2)}`)
     const foundRunners = _.filter(runners, { labels: [{ name: label }] });
+    core.info(`Total filtered runners: ${foundRunners.length}`)
+    core.info(`Found the following filtered runners: ${JSON.stringify(foundRunners, null, 2)}`)
     return foundRunners.length > 0 ? foundRunners[0] : null;
   } catch (error) {
     return null;
@@ -66,8 +72,8 @@ async function waitForRunnerRegistered(label) {
     const interval = setInterval(async () => {
       const runner = await getRunner(label);
     
-      const apiRateStatus = await octokit.request('GET /users/octocat');
-      core.info(JSON.stringify(apiRateStatus, null, 2));
+      // const apiRateStatus = await octokit.request('GET /users/octocat');
+      // core.info(JSON.stringify(apiRateStatus, null, 2));
       if (waitSeconds > timeoutMinutes * 60) {
         core.error('GitHub self-hosted runner registration error');
         clearInterval(interval);
