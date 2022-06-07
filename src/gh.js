@@ -21,10 +21,13 @@ async function getRunner(label, runnerName) {
     core.debug(`Found the following filtered runners: ${JSON.stringify(foundRunners, null, 2)}`)
     core.debug(`Found the following filtered runners by name: ${JSON.stringify(foundRunnersByDnsName, null, 2)}`)
     if (foundRunners.length) {
-      return foundRunners[0]
-    } else if (foundRunnersByDnsName.length) {
+    core.info(`Found runner by label: ${label}`)
+    return foundRunners[0]
+  } else if (foundRunnersByDnsName.length) {
+      core.info(`Found runner by name: ${runnerName}`)
       return foundRunnersByDnsName[0]
     } else {
+      core.info(`Could not find runner using label ${label} or by name: ${runnerName}`)
       return null;
     }
   } catch (error) {
