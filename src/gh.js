@@ -62,7 +62,7 @@ async function waitForRunnerRegistered(label) {
   const retryIntervalSeconds = 30;
   const quietPeriodSeconds = 30;
   let waitSeconds = 0;
-  const octokit = github.getOctokit(config.input.githubToken);
+  // const octokit = github.getOctokit(config.input.githubToken);
 
   core.info(`Waiting ${quietPeriodSeconds}s for the AWS EC2 instance to be registered in GitHub as a new self-hosted runner`);
   await new Promise(r => setTimeout(r, quietPeriodSeconds * 1000));
