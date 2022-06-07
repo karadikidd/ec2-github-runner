@@ -5,19 +5,28 @@ const config = require('./config');
 
 // use the unique label to find the runner
 // as we don't have the runner's id, it's not possible to get it in any other way
-async function getRunner(label) {
+async function getRunner(label, runnerName) {
   const octokit = github.getOctokit(config.input.githubToken);
 
   try {
     
     core.info(`looking for label: ${label}`)
     const runners = await octokit.paginate('GET /repos/{owner}/{repo}/actions/runners', config.githubContext);
-    core.info(`Total unfiltered runners: ${runners.length}`)
-    core.info(`Found the following unfiltered runners: ${JSON.stringify(runners, null, 2)}`)
+    core.debug(`Total unfiltered runners: ${runners.length}`)
+    core.debug(`Found the following unfiltered runners: ${JSON.stringify(runners, null, 2)}`)
     const foundRunners = _.filter(runners, { labels: [{ name: label }] });
-    core.info(`Total filtered runners: ${foundRunners.length}`)
-    core.info(`Found the following filtered runners: ${JSON.stringify(foundRunners, null, 2)}`)
-    return foundRunners.length > 0 ? foundRunners[0] : null;
+    const foundRunnersByDnsName = _.filter(runners, { name: runnerName });
+    core.debug(`Total filtered runners: ${foundRunners.length}`)
+    core.debug(`Total filtered runners by name: ${foundRunnersByDnsName.length}`)
+    core.debug(`Found the following filtered runners: ${JSON.stringify(foundRunners, null, 2)}`)
+    core.debug(`Found the following filtered runners by name: ${JSON.stringify(foundRunnersByDnsName, null, 2)}`)
+    if (foundRunners.length) {
+      return foundRunners[0]
+    } else if (foundRunnersByDnsName.length) {
+      return foundRunnersByDnsName[0]
+    } else {
+      return null;
+    }
   } catch (error) {
     return null;
   }
@@ -57,10 +66,11 @@ async function removeRunner() {
   }
 }
 
-async function waitForRunnerRegistered(label) {
+async function waitForRunnerRegistered(label, ec2Instance) {
   const timeoutMinutes = 5;
   const retryIntervalSeconds = 30;
   const quietPeriodSeconds = 30;
+  const runnerName = ec2Instance.PrivateDnsName.split('.')[0];
   let waitSeconds = 0;
   // const octokit = github.getOctokit(config.input.githubToken);
 
@@ -70,7 +80,7 @@ async function waitForRunnerRegistered(label) {
 
   return new Promise((resolve, reject) => {
     const interval = setInterval(async () => {
-      const runner = await getRunner(label);
+      const runner = await getRunner(label, runnerName);
     
       // const apiRateStatus = await octokit.request('GET /users/octocat');
       // core.info(JSON.stringify(apiRateStatus, null, 2));
