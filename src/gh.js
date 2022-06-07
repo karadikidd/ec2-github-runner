@@ -54,7 +54,7 @@ async function removeRunner(runnerName = null) {
   const octokit = github.getOctokit(config.input.githubToken);
 
   // skip the runner removal process if the runner is not found
-  if (!runner || runner.status !== 'offline') {
+  if (!runner || (runner.status !== 'offline' && runnerName)) {
     core.info(`GitHub self-hosted runner with label ${config.input.label} was not found, or the status is not offline, so removal is skipped`);
     return;
   }
