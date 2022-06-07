@@ -43,6 +43,13 @@ inputs:
       The label is used to remove the runner from GitHub when the runner is not needed anymore.
       This input is required if you use the 'stop' mode.
     required: false
+  runnerName:
+    description: >-
+      Name of the unique name assigned to the runner.
+      The name is used in two cases:
+      - to use as the input of 'runs-on' property for the following jobs;
+      - to remove the runner from GitHub when it is not needed anymore.
+    required: false
   ec2-instance-id:
     description: >-
       EC2 Instance Id of the created runner.
