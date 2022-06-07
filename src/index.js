@@ -11,9 +11,9 @@ function setOutput(label, ec2InstanceId) {
 async function start() {
   const label = config.generateUniqueLabel();
   const runnerName = config.generateUniqueName(15);
-  const runnerExists = gh.getRunner(label, runnerName);
+  const runnerExists = await gh.getRunner(label, runnerName);
   if (runnerExists) {
-    gh.removeRunner(runnerName);
+    await gh.removeRunner(runnerName);
   }
   const githubRegistrationToken = await gh.getRegistrationToken();
   const ec2Instance = await aws.startEc2InstanceExponential(label, runnerName, githubRegistrationToken);
