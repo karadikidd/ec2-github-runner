@@ -71,8 +71,8 @@ async function removeRunner(runnerName = null) {
 
 async function waitForRunnerRegistered(label, runnerName) {
   const timeoutMinutes = 5;
-  const retryIntervalSeconds = 30;
-  const quietPeriodSeconds = 30;
+  const retryIntervalSeconds = 45;
+  const quietPeriodSeconds = 45;
   let waitSeconds = 0;
   // const octokit = github.getOctokit(config.input.githubToken);
 
@@ -98,7 +98,7 @@ async function waitForRunnerRegistered(label, runnerName) {
         resolve();
       } else {
         waitSeconds += retryIntervalSeconds;
-        core.info('Checking...');
+        core.info(`Runner is not yet ready, sleeping for ${retryIntervalSeconds} seconds...`);
       }
     }, retryIntervalSeconds * 1000);
   });
