@@ -71,8 +71,8 @@ async function removeRunner(runnerName = null) {
 
 async function waitForRunnerRegistered(label, runnerName) {
   const timeoutMinutes = 5;
-  const retryIntervalSeconds = 45;
-  const quietPeriodSeconds = 45;
+  const retryIntervalSeconds = 30;
+  const quietPeriodSeconds = 30;
   let waitSeconds = 0;
   // const octokit = github.getOctokit(config.input.githubToken);
 
